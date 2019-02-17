@@ -1,0 +1,17 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+
+<component name = "SmorkuScene" extends = "Scene" initialFocus = "AlbumList">
+    <children>
+        <PosterGrid id="AlbumList" 
+            numColumns="6" 
+            caption1NumLines="1"
+            itemSpacing = "[ 20, 20 ]"
+            basePosterSize="[ 150, 150 ]">
+            <ContentNode role="content" id="AlbumListContent"/>
+        </PosterGrid>
+    </children>
+
+    <script type="text/brightscript" uri="pkg://components/smorkuscene.brs"/>
+
+</component>
+
