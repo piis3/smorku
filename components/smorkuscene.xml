@@ -3,10 +3,13 @@
 <component name = "SmorkuScene" extends = "Scene" initialFocus = "AlbumList">
     <children>
         <PosterGrid id="AlbumList" 
-            numColumns="6" 
+            numColumns="4" 
             caption1NumLines="1"
+            useAtlas = "false"
+            posterDisplayMode = "scaleToZoom"
             itemSpacing = "[ 20, 20 ]"
-            basePosterSize="[ 150, 150 ]">
+            basePosterSize="[ 300, 200 ]"
+            >
             <ContentNode role="content" id="AlbumListContent"/>
         </PosterGrid>
     </children>
