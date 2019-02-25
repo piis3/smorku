@@ -16,6 +16,8 @@ sub Main()
             if msg.isScreenClosed() then 
                 return
             end if
+        else if msgType = "roUrlEvent"
+            print "Leaked a URL event to the main thread"; msg
         end if
     end while
 end sub

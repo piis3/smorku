@@ -1,0 +1,23 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+
+<component name="AlbumImagesView" extends="GridPanel" initialFocus="ImageGrid">
+    <interface>
+        <field id="albumUri" type="string" onChange="loadAlbumImages"/>
+    </interface>
+
+    <children>
+        <PosterGrid id="ImageGrid"
+            numColumns="3"
+            caption1NumLines="0"
+            useAtlas="false"
+            posterDisplayMode="scaleToZoom"
+            itemSpacing="[20, 20]"
+            basePosterSize="[300,200]"
+            >
+            <ContentNode role="content" id="AlbumImageContent"/>
+        </PosterGrid>
+    </children>
+    
+    <script type="text/brightscript" uri="pkg://components/albumview.brs"/>
+</component>
+         

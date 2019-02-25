@@ -19,6 +19,7 @@ function init()
     ' Use a standard SSL trust store
     for each xfer in m.urlTransferPool
         xfer.SetCertificatesFile("common:/certs/ca-bundle.crt")
+        xfer.SetMessagePort(m.port)
     end for
     m.ret = true
 end function
@@ -82,19 +83,16 @@ function addRequest(request as Object) as Boolean
 
                         ' should transfer more stuff from parameters to urlXfer
                         idKey = stri(xfer.getIdentity()).trim()
+
+                        m.jobsById[idKey] = {context: context, xfer: xfer}
+                       '  print "UriFetcher: initiating transfer '"; idkey; "' for URI '"; uri; "'";
+                        m.top.setField("JobsByIdField", m.jobsById.count())
+                        
                         ok = xfer.AsyncGetToString()
                         if not ok
                             print "ERROR: Unable to use supposedly free xfer in pool " stri(xfer.getIdentity()).trim()
                             return false
                         end if
-                        if ok
-                            m.jobsById[idKey] = {context: context, xfer: xfer}
-                                                    ? "jobsbyID: "; m.jobsbyID.count()
-                            print "UriFetcher: initiating transfer '"; idkey; "' for URI '"; uri; "'"; " succeeded: "; ok
-                                                    m.top.setField("JobsByIdField", m.jobsById.count())
-                                            else
-                            print "UriFetcher: invalid uri: "; uri
-                        endif
                     end if
 		        end if
             end if
@@ -107,9 +105,9 @@ function processResponse(msg as Object)
 	idKey = stri(msg.GetSourceIdentity()).trim()
 	job = m.jobsById[idKey]
 
-    print "Work queue size: "; m.workQueue.count()
-    print "Number of jobs in flight: "; m.jobsById.count()
-    print "Number of urlXfer objects in pool: " m.urlTransferPool.count()
+    ' print "Work queue size: "; m.workQueue.count()
+    ' print "Number of jobs in flight: "; m.jobsById.count()
+    ' print "Number of urlXfer objects in pool: " m.urlTransferPool.count()
 
     if job<>invalid
         m.ret = true
@@ -117,7 +115,10 @@ function processResponse(msg as Object)
         xfer = job.xfer
         parameters = context.parameters
         uri = parameters.uri
-		print "UriFetcher: response for transfer '"; idkey; "' for URI '"; uri; "'"
+		' print "UriFetcher: response for transfer "; idkey; " status:"; msg.getResponseCode(); " for URI "; uri
+'        if instr(1, uri, "!images")
+'            stop
+'        end if
 		result = {code: msg.getResponseCode(), content: msg.getString()}
 
 		' could handle various error codes, retry, etc.

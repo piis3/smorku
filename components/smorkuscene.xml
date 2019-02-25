@@ -1,17 +1,25 @@
 <?xml version = "1.0" encoding = "utf-8" ?>
 
-<component name = "SmorkuScene" extends = "Scene" initialFocus = "AlbumList">
+<component name = "SmorkuScene" extends = "OverhangPanelSetScene" initialFocus = "AlbumList">
     <children>
-        <PosterGrid id="AlbumList" 
-            numColumns="4" 
-            caption1NumLines="1"
-            useAtlas = "false"
-            posterDisplayMode = "scaleToZoom"
-            itemSpacing = "[ 20, 20 ]"
-            basePosterSize="[ 300, 200 ]"
+        <GridPanel id="AlbumPanel"
+            panelSize="full"
+            leftOnly="true"
+            hasNextPanel="true"
+            isFullScreen="true"
+            createNextPanelOnItemFocus="true"
             >
-            <ContentNode role="content" id="AlbumListContent"/>
-        </PosterGrid>
+            <PosterGrid id="AlbumList" 
+                numColumns="3" 
+                caption1NumLines="1"
+                useAtlas = "false"
+                posterDisplayMode = "scaleToZoom"
+                itemSpacing = "[ 20, 20 ]"
+                basePosterSize="[ 300, 200 ]"
+                >
+                <ContentNode role="content" id="AlbumListContent"/>
+            </PosterGrid>
+        </GridPanel>
     </children>
 
     <script type="text/brightscript" uri="pkg://components/smorkuscene.brs"/>
