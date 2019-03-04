@@ -3,6 +3,8 @@
 <component name="AlbumImagesView" extends="GridPanel" initialFocus="ImageGrid">
     <interface>
         <field id="albumUri" type="string" onChange="loadAlbumImages"/>
+        <field id="videoPlayer" type="node"/>
+        <field id="imageView" type="node" onChange="setupFocusHandler"/>
     </interface>
 
     <children>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="ImageView" extends="Group" initialFocus="videoPlayer">
+    <interface>
+        <field id="contentList" type="node"/>
+        <field id="contentIndex" type="integer" onChange="displayContent" alwaysNotify="true"/>
+    </interface>
+       
+    <script type="text/brightscript" uri="pkg:/components/imageview.brs"/>
+    <children>
+        <Poster
+            width="1280"
+            height="720"
+            visible="false"
+            loadDisplayMode="scaleToFit"
+            loadingBitmapUri="pkg:/images/loading-screen.png"
+            loadingBitmapOpacity="0.7"
+            id="imageViewer1"/>
+        <Poster
+            width="1280"
+            height="720"
+            visible="false"
+            uri="pkg:/images/loading-screen.png"
+            loadDisplayMode="scaleToFit"
+            opacity="0.7"
+            id="loadingPoster"/>
+        <Video
+            width="1280.0"
+            height="720.0"
+            visible="false"
+            enableTrickPlay="false"
+
+            id="videoPlayer"
+            />
+    </children>
+</component>

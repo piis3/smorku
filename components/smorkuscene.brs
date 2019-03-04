@@ -6,6 +6,11 @@ function init()
     m.top.overhang.showOptions = false
     m.top.overhang.title = "Zarrf"
     m.albumPanel = m.top.FindNode("AlbumPanel")
+    m.imageView = createObject("roSGNode", "ImageView")
+    m.videoPlayer = m.imageView.FindNode("videoPlayer")
+    m.imageViewer = m.imageView.FindNode("imageViewer")
+
+    m.top.appendChild(m.imageView)
 
     m.top.panelSet.appendChild(m.albumPanel)
     m.albumList = m.top.FindNode("AlbumListContent")
@@ -19,6 +24,7 @@ function init()
     m.top.panelSet.observeField("focusedChild", "panelSwitch")
     
     m.listGrid.setFocus(true)
+
     m.listGrid.observeField("itemSelected", "selectAlbum")
     AsyncLoadAlbums("zarrf")
 end function
@@ -31,7 +37,7 @@ Function SetConfig()
 end Function
 
 function panelSwitch(msg as Object) 
-    print "Panel being switched "; msg.getData().id
+    'print "Panel being switched "; msg.getData().id
     
     if m.top.panelSet.isGoingBack
         'm.listGrid.setFocus(true)
@@ -48,6 +54,8 @@ Function selectAlbum(msg as object)
     else 
         m.albumImagesView = createObject("RoSGNode", "AlbumImagesView")
         m.albumPanel.nextPanel = m.albumImagesView
+        m.albumImagesView.videoPlayer = m.videoPlayer
+        m.albumImagesView.imageView = m.imageView
         m.albumImagesView.setFocus(true)
         m.albumImagesView.albumUri = item.albumUri
     end if
@@ -57,6 +65,10 @@ Function parseLoadAlbums(json as Object) as Object
     dim albums[10]
     count = 0
     for each album in json.Response.Album
+        ' TODO Remove, just limit the noise during debugging
+        if count > 2
+            exit for
+        end if 
         albumData = {}
         albumData.name = album.Name
         albumData.thumbRef = album.Uris.NodeCoverImage.Uri
