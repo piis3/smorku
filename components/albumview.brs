@@ -45,9 +45,6 @@ function handleImages(msg as object)
         m.imageGrid.numRows = (imageCount / m.imageGrid.numColumns) + 1
         count = 0
         for each image in json.Response.AlbumImage
-            if count > 2
-                exit for
-            end if
             i = m.imageList.createChild("ContentNode")
             if len(image.Caption) > 0
                 i.shortdescriptionline1 = image.Caption

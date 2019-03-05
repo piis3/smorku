@@ -1,0 +1,5 @@
+* Lookup / browse users on smug mug rather than using my account
+* Look into optimizing response sizes and expanding data fields to reduce number of SM requests
+* Enable viewing videos in the slide show mode
+* Make an automatically progressing slideshow when play is pressed
+* Implement paging

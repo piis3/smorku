@@ -29,6 +29,8 @@ function init()
     AsyncLoadAlbums("zarrf")
 end function
 
+
+
 Function SetConfig()
     m.global.addFields({
         apiUrl: "https://api.smugmug.com",
@@ -66,9 +68,6 @@ Function parseLoadAlbums(json as Object) as Object
     count = 0
     for each album in json.Response.Album
         ' TODO Remove, just limit the noise during debugging
-        if count > 2
-            exit for
-        end if 
         albumData = {}
         albumData.name = album.Name
         albumData.thumbRef = album.Uris.NodeCoverImage.Uri

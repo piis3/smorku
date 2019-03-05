@@ -12,9 +12,13 @@
             height="720"
             visible="false"
             loadDisplayMode="scaleToFit"
-            loadingBitmapUri="pkg:/images/loading-screen.png"
-            loadingBitmapOpacity="0.7"
             id="imageViewer1"/>
+        <Poster
+            width="1280"
+            height="720"
+            visible="false"
+            loadDisplayMode="scaleToFit"
+            id="imageViewer2"/>
         <Poster
             width="1280"
             height="720"
