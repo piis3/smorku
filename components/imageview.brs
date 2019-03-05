@@ -3,8 +3,11 @@ function init()
 
     m.imageViewer = m.top.findNode("imageViewer1")
     m.switchImageViewer = m.top.findNode("imageViewer2")
+    m.cachingPoster = m.top.findNode("cachingPoster")
+
     m.imageViewer.observeField("loadStatus", "onImageLoaded")
     m.switchImageViewer.observeField("loadStatus", "onImageLoaded")
+    m.cachingPoster.observeField("loadStatus", "onImageLoaded")
 
 end function
 
@@ -12,10 +15,12 @@ end function
 ' show the switch viewer, hide the loading poster and the old viewer
 ' then swap the references
 function onImageLoaded(msg as object)
-    if msg.getData() = "ready"
-        switchViewers()
-    else if msg.getData() = "loading"
-        m.loadingPoster.visible = true
+    if msg.getNode() <> m.cachingPoster.id
+        if msg.getData() = "ready" 
+            switchViewers()
+        else if msg.getData() = "loading" 
+            m.loadingPoster.visible = true
+        end if
     end if
 end function
 
@@ -29,6 +34,7 @@ function switchViewers()
 end function
 
 function close()
+    m.currentUri = invalid
     m.imageViewer.visible = false
     m.switchImageViewer.visible = false
     m.loadingPoster.visible = false
@@ -45,11 +51,25 @@ function displayContent(item as object)
     else 
         ' The alternate viewer might already have the image we want, in which case we just swap them
         if m.switchImageViewer.uri = item.image2kUrl
+            print "Alternate poster already has url"
+            switchViewers()
+        else if m.cachingPoster.uri = item.image2kUrl
+            print "Swapping in cached poster for image"
+            tmp = m.cachingPoster
+            m.cachingPoster = m.switchImageViewer
+            m.switchImageViewer = tmp
             switchViewers()
         else     
             m.switchImageViewer.uri = item.image2kUrl
         end if
         m.top.setFocus(true)
+    end if
+end function
+
+function cacheIndex(idx as Integer)
+    item = m.top.contentList.getChild(idx)
+    if item <> invalid
+        m.cachingPoster.uri = item.image2kUrl
     end if
 end function
 
@@ -66,9 +86,13 @@ function onKeyEvent(key as String, press as boolean) as boolean
             return true
         else if key = "left"
             m.top.contentIndex = m.top.contentIndex - 1
+            ' already decremented, now cache one more down
+            cacheIndex(m.top.contentIndex - 1)
             return true
         else if key = "right"
             m.top.contentIndex = m.top.contentIndex + 1
+            ' already incremented, now cache one more up
+            cacheIndex(m.top.contentIndex + 1)
             return true
         end if
     else

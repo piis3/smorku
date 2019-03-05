@@ -27,6 +27,12 @@
             loadDisplayMode="scaleToFit"
             opacity="0.7"
             id="loadingPoster"/>
+        <Poster
+            width="1280"
+            height="720"
+            visible="false"
+            loadDisplayMode="scaleToFit"
+            id="cachingPoster"/>
         <Video
             width="1280.0"
             height="720.0"
