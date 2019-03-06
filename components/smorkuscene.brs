@@ -2,9 +2,12 @@ function init()
     'm.top.setFocus(true)
     print "smorkuScene.brs INIT" 
     SetConfig()
-    m.top.overhang.showClock = true
-    m.top.overhang.showOptions = false
-    m.top.overhang.title = "Zarrf"
+    m.overhang = m.top.findNode("overhang")
+    m.overhang.color = "0x111111ff"
+    m.overhang.showClock = true
+    m.overhang.showOptions = false
+    m.overhang.logoUri = "pkg:/images/panel-logo.png"
+    m.overhang.title = "Zarrf"
     m.albumPanel = m.top.FindNode("AlbumPanel")
     m.imageView = createObject("roSGNode", "ImageView")
     m.videoPlayer = m.imageView.FindNode("videoPlayer")
@@ -43,6 +46,7 @@ function panelSwitch(msg as Object)
     
     if m.top.panelSet.isGoingBack
         'm.listGrid.setFocus(true)
+        m.overhang.title = "Zarrf"
     end if
 end function
 
@@ -55,6 +59,8 @@ Function selectAlbum(msg as object)
         m.albumImagesView.setFocus(true)
     else 
         m.albumImagesView = createObject("RoSGNode", "AlbumImagesView")
+        m.overhang.title = item.name
+
         m.albumPanel.nextPanel = m.albumImagesView
         m.albumImagesView.videoPlayer = m.videoPlayer
         m.albumImagesView.imageView = m.imageView
@@ -104,7 +110,7 @@ Function handleLoadAlbums(msg as Object)
         for each album in albums
             a = listContent.createChild("ContentNode")
             a.shortdescriptionline1 = album.name
-            a.addFields({albumUri: album.albumUri})
+            a.addFields({albumUri: album.albumUri, name: album.name})
             ' a.albumUri = album.albumUri
             ' fire off async request to resolve the thumbnail and attach this content node so it can be rendered
             loadAlbumThumbnail(album.thumbRef, a)

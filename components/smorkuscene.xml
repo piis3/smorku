@@ -2,7 +2,11 @@
 
 <component name = "SmorkuScene" extends = "OverhangPanelSetScene" initialFocus = "AlbumList">
     <children>
+        <Overhang id="overhang"
+            title = "monkey"
+            />
         <GridPanel id="AlbumPanel"
+            color="0x111111ff"
             panelSize="full"
             leftOnly="true"
             hasNextPanel="true"
