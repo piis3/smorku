@@ -41,7 +41,7 @@ function go() as Void
 			end if
 		else if mt="roUrlEvent"
 			processResponse(msg)
-            oldWork = m.workQueue.pop()
+            oldWork = m.workQueue.shift()
             if oldWork<>invalid
                 if type(oldWork) = "roSGNodeEvent"
                     m.ret = addRequest(oldWork.getData())

@@ -23,7 +23,11 @@ function handleEndViewing(msg as object)
 end function
 
 function loadAlbumImages(msg as object) 
-    reqUrl = m.global.apiUrl + m.top.albumUri + "!images?APIKey=" + m.global.apiKey
+    actualLoadAlbumImages()
+end function
+
+function actualLoadAlbumImages(start = 1 as Integer) 
+    reqUrl = m.global.apiUrl + m.top.albumUri + "!images?APIKey=" + m.global.apiKey + "&start=" + start.toStr()
     ctx = createObject("RoSGNode", "Node")
     parameters = {
         uri: reqUrl,
@@ -41,7 +45,7 @@ function handleImages(msg as object)
         ctx = msg.getRoSGNode()
         response = msg.getData()
         json = ParseJSON(response.content)
-        imageCount = json.Response.AlbumImage.Count()
+        imageCount = json.Response.Pages.Total
         m.imageGrid.numRows = (imageCount / m.imageGrid.numColumns) + 1
         count = 0
         for each image in json.Response.AlbumImage
@@ -53,6 +57,11 @@ function handleImages(msg as object)
             loadAlbumImageThumbnail(image.Uris.ImageSizes.Uri, i)
             count = count + 1
         end for
+        if json.Response.Pages.NextPage <> invalid
+            newStart = json.Response.Pages.Start + json.Response.Pages.Count
+            print "Requesting page starting at "; newStart
+            actualLoadAlbumImages(newStart)
+        end if
     end if
     m.imageGrid.setFocus(true)
 end function
@@ -99,8 +108,6 @@ function handleViewImage(msg as object)
     print "Set content index to "; m.top.imageView.contentIndex
 
 end function
-
-
 
 ' Leaving this here temporarily for when we deal with video again
 function handleVideo(msg as object)

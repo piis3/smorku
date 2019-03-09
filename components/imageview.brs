@@ -58,7 +58,11 @@ function displayContent(item as object)
             tmp = m.cachingPoster
             m.cachingPoster = m.switchImageViewer
             m.switchImageViewer = tmp
-            switchViewers()
+            if m.cachingPoster.loadStatus <> "ready"
+                m.loadingPoster.visible = true
+            else 
+                switchViewers()
+            end if
         else     
             m.switchImageViewer.uri = item.image2kUrl
         end if
