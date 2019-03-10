@@ -27,7 +27,33 @@ function loadAlbumImages(msg as object)
 end function
 
 function actualLoadAlbumImages(start = 1 as Integer) 
-    reqUrl = m.global.apiUrl + m.top.albumUri + "!images?APIKey=" + m.global.apiKey + "&start=" + start.toStr()
+    requestConfigJson = FormatJson({
+        filter: ["Uri", "Caption", "FileName"],
+        filteruri: ["ImageSizes"],
+        expand: {
+            "ImageSizes": {
+                filter: [], 
+                filteruri: ["ImageSizeCustom"],
+                expand: {
+                    "ImageSizeCustom": {
+                        multiargs: [
+                            { 
+                                width: m.imageGrid.basePosterSize[0],
+                                height: m.imageGrid.basePosterSize[1]
+                            },
+                            {
+                                width: 1920,
+                                height: 1080
+                            }
+                        ],
+                        filter: ["Url", "RequestedHeight", "RequestedWidth"]
+                    }
+                }
+            }
+        }
+    }).escape()
+
+    reqUrl = m.global.apiUrl + m.top.albumUri + "!images?APIKey=" + m.global.apiKey + "&_config=" + requestConfigJson + "&start=" + start.toStr()
     ctx = createObject("RoSGNode", "Node")
     parameters = {
         uri: reqUrl,
@@ -54,7 +80,15 @@ function handleImages(msg as object)
                 i.shortdescriptionline1 = image.Caption
             end if
             i.addFields({imageUri: i.Uri})
-            loadAlbumImageThumbnail(image.Uris.ImageSizes.Uri, i)
+            sizesRef = json.Expansions.lookup(image.Uris.ImageSizes.Uri)
+            customSizesRef = json.Expansions.lookup(sizesRef.ImageSizes.Uris.ImageSizeCustom.Uri)
+            for each imageSize in customSizesRef.ImageSizeCustom
+                if imageSize.RequestedWidth = 1920
+                    i.addFields({image2kUrl: imageSize.Url})
+                else if imageSize.RequestedWidth = m.imageGrid.basePosterSize[0]
+                    i.fhdgridposterurl = imageSize.Url
+                end if
+            end for
             count = count + 1
         end for
         if json.Response.Pages.NextPage <> invalid

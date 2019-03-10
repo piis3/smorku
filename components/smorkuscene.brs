@@ -7,7 +7,6 @@ function init()
     m.overhang.showClock = true
     m.overhang.showOptions = false
     m.overhang.logoUri = "pkg:/images/panel-logo.png"
-    m.overhang.title = "Zarrf"
     m.albumPanel = m.top.FindNode("AlbumPanel")
     m.imageView = createObject("roSGNode", "ImageView")
     m.videoPlayer = m.imageView.FindNode("videoPlayer")
@@ -29,10 +28,10 @@ function init()
     m.listGrid.setFocus(true)
 
     m.listGrid.observeField("itemSelected", "selectAlbum")
-    AsyncLoadAlbums("zarrf")
+    m.loadedUser = "zarrf"
+    m.overhang.title = m.loadedUser
+    AsyncLoadAlbums(m.loadedUser)
 end function
-
-
 
 Function SetConfig()
     m.global.addFields({
@@ -46,7 +45,7 @@ function panelSwitch(msg as Object)
     
     if m.top.panelSet.isGoingBack
         'm.listGrid.setFocus(true)
-        m.overhang.title = "Zarrf"
+        m.overhang.title = m.loadedUser
     end if
 end function
 
@@ -69,23 +68,36 @@ Function selectAlbum(msg as object)
     end if
 end function
 
-Function parseLoadAlbums(json as Object) as Object
-    dim albums[10]
-    count = 0
-    for each album in json.Response.Album
-        ' TODO Remove, just limit the noise during debugging
-        albumData = {}
-        albumData.name = album.Name
-        albumData.thumbRef = album.Uris.NodeCoverImage.Uri
-        albumData.albumUri = album.Uri
-        albums.push(albumData)
-        count = count + 1
-    end for
-    return albums
-end Function
+Function AsyncLoadAlbums(SMUser as String, start = 1 as Integer) as Object
+    ' This is a little json based filter language for smugmug which lets us only retrieve those fields we care about 
+    ' and also chain a bunch of sub requests together so we do not need so many round trips.
+    requestConfigJson = FormatJson({
+        filter: ["Name", "Uri", "HighlightImage.Uri", "ImageCount"],
+        filteruri: ["HighlightImage"],
+        expand: {
+            "HighlightImage": {
+                filter: [], 
+                filteruri: ["ImageSizes"],
+                expand: {
+                    "ImageSizes": {
+                        filter: [], 
+                        filteruri: ["ImageSizeCustom"],
+                        expand: {
+                            "ImageSizeCustom": {
+                                args: {
+                                    width: m.listGrid.basePosterSize[0],
+                                    height: m.listGrid.basePosterSize[1]
+                                },
+                                filter: ["Url"]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }).escape()
 
-Function AsyncLoadAlbums(SMUser as String) as Object
-    reqUrl = m.global.apiUrl + "/api/v2/user/" + SMUser + "!albums?APIKey=" + m.global.apiKey
+    reqUrl = m.global.apiUrl + "/api/v2/user/" + SMUser + "!albums?APIKey=" + m.global.apiKey + "&_config=" + requestConfigJson + "&start=" + start.toStr()
     ctx = createObject("RoSGNode", "Node")
     parameters = {
         uri: reqUrl,
@@ -97,7 +109,7 @@ Function AsyncLoadAlbums(SMUser as String) as Object
 end Function
 
 Function handleLoadAlbums(msg as Object)
-    print "Entered handleLoadAlbumbs"
+    print "Entered handleLoadAlbums"
     mt = type(msg)
     listGrid = m.listGrid
     listContent = m.albumList
@@ -106,68 +118,43 @@ Function handleLoadAlbums(msg as Object)
         response = msg.getData()
         json = ParseJSON(response.content)
         albums = parseLoadAlbums(json)
-        listGrid.numRows = (albums.Count() / listGrid.numColumns) + 1
+        loadedImagesCount = albums.Count() + listContent.getChildCount()
+        listGrid.numRows = (loadedImagesCount / listGrid.numColumns) + 1
         for each album in albums
             a = listContent.createChild("ContentNode")
             a.shortdescriptionline1 = album.name
-            a.addFields({albumUri: album.albumUri, name: album.name})
-            ' a.albumUri = album.albumUri
-            ' fire off async request to resolve the thumbnail and attach this content node so it can be rendered
-            loadAlbumThumbnail(album.thumbRef, a)
+            a.addFields({
+                albumUri: album.albumUri, 
+                name: album.name,
+            })
+            a.fhdgridposterurl = album.thumbnailUrl
+            a.hdgridposterurl = album.thumbnailUrl
         end for
+        if json.Response.Pages.NextPage <> invalid
+            newStart = json.Response.Pages.Start + json.Response.Pages.Count
+            AsyncLoadAlbums(m.loadedUser, newStart)
+        end if
     end if
 end Function
 
-Function loadAlbumThumbnail(uri as String, contentNode as Object) 
-    reqUrl = m.global.apiUrl + uri + "?APIKey=" + m.global.apiKey
-    ctx = createObject("RoSGNode", "Node")
-    parameters = {
-        uri: reqUrl,
-        accept: "application/json"
-    }
-    ctx.addFields({parameters: parameters, contentNode: contentNode, response: {}})
-    ctx.observeField("response", "handleAlbumThumbnail")
-    m.uriFetcher.request = {context: ctx}
+Function parseLoadAlbums(json as Object) as Object
+    dim albums[10]
+    count = 0
+    for each album in json.Response.Album
+        if album.ImageCount <> invalid and album.ImageCount > 0
+            ' TODO Remove, just limit the noise during debugging
+            albumData = {}
+            albumData.name = album.Name
+            albumData.albumUri = album.Uri
+            thumbRef = json.Expansions.lookup(album.Uris.HighlightImage.Uri)
+            sizesRef = json.Expansions.lookup(thumbRef.Image.Uris.ImageSizes.Uri)
+            customSizeRef = json.Expansions.lookup(sizesRef.ImageSizes.Uris.ImageSizeCustom.Uri)
+
+            albumData.thumbnailUrl = customSizeRef.ImageSizeCustom.Url
+            albums.push(albumData)
+            count = count + 1
+        end if
+    end for
+    return albums
 end Function
-
-Function handleAlbumThumbnail(msg as Object)
-    print "Entered handleAlbumThumbnail"
-    mt = type(msg)
-    if mt = "roSGNodeEvent"
-        ctx = msg.getRoSGNode()
-        response = msg.getData()
-        node = ctx.contentNode
-        json = ParseJSON(response.content)
-        relativeUri = json.Response.Image.Uris.ImageSizes.Uri
-        resolveImageThumbnail(relativeUri, node)
-        'node.hdgridposterurl = json.Response.Image.ThumbnailUrl
-    end if
-end function
-
-Function resolveImageThumbnail(uri as String, contentNode as Object)
-    reqUrl = m.global.apiUrl + uri + "?APIKey=" + m.global.apiKey
-    ctx = createObject("RoSGNode", "Node")
-    parameters = {
-        uri: reqUrl,
-        accept: "application/json"
-    }
-    ctx.addFields({parameters: parameters, contentNode: contentNode, response: {}})
-    ctx.observeField("response", "handleResolveThumbnail")
-    m.uriFetcher.request = {context: ctx}
-end function
-
-function handleResolveThumbnail(msg as Object) 
-    print "Entered handleResolveThumbnail"
-    mt = type(msg)
-    if mt = "roSGNodeEvent"
-        ctx = msg.getRoSGNode()
-        response = msg.getData()
-        node = ctx.contentNode
-        json = ParseJSON(response.content)
-        node.fhdgridposterurl = json.Response.ImageSizes.MediumImageUrl
-        node.hdgridposterurl = json.Response.ImageSizes.MediumImageUrl
-        node.sdgridposterurl = json.Response.ImageSizes.SmallImageUrl
-    end if
-end function
-
 

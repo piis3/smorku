@@ -6,7 +6,6 @@
             title = "monkey"
             />
         <GridPanel id="AlbumPanel"
-            color="0x111111ff"
             panelSize="full"
             leftOnly="true"
             hasNextPanel="true"
@@ -17,7 +16,7 @@
                 numColumns="3" 
                 caption1NumLines="1"
                 useAtlas = "false"
-                posterDisplayMode = "scaleToZoom"
+                posterDisplayMode = "scaleToFit"
                 itemSpacing = "[ 20, 20 ]"
                 basePosterSize="[ 300, 200 ]"
                 >

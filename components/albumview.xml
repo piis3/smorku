@@ -12,7 +12,7 @@
             numColumns="3"
             caption1NumLines="0"
             useAtlas="false"
-            posterDisplayMode="scaleToZoom"
+            posterDisplayMode="scaleToFit"
             itemSpacing="[20, 20]"
             basePosterSize="[300,200]"
             >
