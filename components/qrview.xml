@@ -1,0 +1,21 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+
+<component name="qrview" extends="group">
+
+    <interface>
+        <field id="text" type="string" />
+        <field id="width" type="int" />
+        <field id="height" type="int" />
+        <field id="renderComplete" type="boolean" alwaysNotify="true"/>
+        <function name="renderQR"/>
+    </interface>
+
+    <children>
+        
+    </children>
+    <script type="text/brightscript" uri="pkg://components/math.brs"/>
+    <script type="text/brightscript" uri="pkg://components/string.brs"/>
+    <script type="text/brightscript" uri="pkg://components/array.brs"/>
+    <script type="text/brightscript" uri="pkg://components/rspoly.brs"/>
+    <script type="text/brightscript" uri="pkg://components/qrview.brs"/>
+</component>

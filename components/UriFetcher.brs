@@ -9,11 +9,6 @@ function init()
                           createObject( "roUrlTransfer" )
                           createObject( "roUrlTransfer" )
                           createObject( "roUrlTransfer" )
-                          createObject( "roUrlTransfer" )
-                          createObject( "roUrlTransfer" )
-                          createObject( "roUrlTransfer" )
-                          createObject( "roUrlTransfer" )
-                          createObject( "roUrlTransfer" )
                         ]
     m.workQueue = []
     ' Use a standard SSL trust store
@@ -115,7 +110,10 @@ function processResponse(msg as Object)
         xfer = job.xfer
         parameters = context.parameters
         uri = parameters.uri
-		' print "UriFetcher: response for transfer "; idkey; " status:"; msg.getResponseCode(); " for URI "; uri
+		'print "UriFetcher: response for transfer "; idkey; " status:"; msg.getResponseCode(); " for URI "; uri
+        'if msg.getResponseCode() > 399
+        '    print "error message "; msg.getString()
+        'end if
 '        if instr(1, uri, "!images")
 '            stop
 '        end if

@@ -1,0 +1,30 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<component name="loginPanel" extends="Panel" initialFocus="loginGroup">
+    <children>
+        <Group id="outerGroup">
+            <ButtonGroup id="loginGroup"
+                visible="true"
+                layoutDirection="vert"
+                translation = "[0, 0]"
+                itemspacings = "[20]"
+                horizAlignment="center"
+                vertAlignment="center">
+                    <Button id="loginButton"
+                        showFocusFootprint="true"
+                        text="Login to SmugMug"/>
+                    <Label
+                        text="or"
+                        font="font:LargeSystemFont"/>
+                    <Button id="lookup"
+                        showFocusFootprint="true"
+                        text="View a smugmug users albums"/>
+            </ButtonGroup>
+             
+        </Group>
+
+    </children>
+
+    <script type="text/brightscript" uri="pkg://components/array.brs"/>
+    <script type="text/brightscript" uri="pkg://components/math.brs"/>
+    <script type="text/brightscript" uri="pkg://components/loginscene.brs"/>
+</component>

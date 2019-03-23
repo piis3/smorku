@@ -1,0 +1,74 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+
+<component name="LoginURLDialog" extends="Dialog">
+
+    <interface>
+        <field id="authUrl" type="string" onChange="gotAuthUrl"/>
+        <field id="enterPinSelected" type="boolean"/>
+    </interface>
+
+    <children>
+        <QRView id="loginQrView"/>
+    </children>
+    <script type="text/brightscript">
+    <![CDATA[
+        sub init()
+            print "LoginURLDialog init"
+            m.top.title = "Login to SmugMug"
+            m.top.buttons = ["Enter Code", "Cancel"]
+            m.top.message = "Loading..."
+            m.top.graphicUri = "pkg:/images/spinner-icon.png"
+            m.top.graphicWidth = 138
+            m.top.graphicHeight = 138
+            m.description = "Scan the QR Code and authorize Smorku in SmugMug" + chr(10) + "Then enter the verification code here" + chr(10)
+
+            m.cancelButton = m.top.buttonGroup.getChild(0)
+            m.enterPinButton = m.top.buttonGroup.getChild(1)
+
+            m.top.observeField("buttonSelected", "onButton")
+        end sub
+
+        function onButton(msg as object)
+            if msg.getData() = 0
+                m.top.close = true
+                m.top.enterPinSelected = true
+            else if msg.getData() = 1
+                m.top.close = true
+            end if
+        end function
+
+        function gotAuthUrl(msg as object)
+            m.top.message = m.description
+
+            m.qrview = m.top.findNode("loginQrView")
+            
+            ' We need to render everything to set sizes and let the layout adjust, then when we're done we can place the QR code in the right place
+            m.qrview.observeField("renderComplete", "fixQrPosition")
+            m.qrview.callfunc("renderQR", msg.getData())
+            m.top.graphicWidth = m.qrview.width
+            m.top.graphicHeight = m.qrview.height
+        end function
+        
+        function fixQrPosition(msg as object)
+        
+            for i = 0 to m.top.getChildCount() -1
+                child = m.top.getChild(i)
+                if child.hasField("uri") and child.uri = m.top.graphicUri
+                    bRect = child.boundingRect()
+                    centerx = bRect.x + m.top.graphicWidth / 2
+                    centery = bRect.y + m.top.graphicHeight / 2
+                    
+                    m.qrview.translation = [
+                        int(centerx - m.qrview.width / 2),
+                        int(centery - m.qrview.height / 2)
+                    ]
+                    m.qrview.visible = true 
+                    exit for
+                end if
+            end for
+
+        end function
+
+    ]]>
+    </script>
+</component>

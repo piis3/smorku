@@ -1,8 +1,8 @@
 function init()
-    'm.top.setFocus(true)
+    m.top.setFocus(true)
     print "smorkuScene.brs INIT" 
     SetConfig()
-    m.overhang = m.top.findNode("overhang")
+    m.overhang = m.top.overhang
     m.overhang.color = "0x111111ff"
     m.overhang.showClock = true
     m.overhang.showOptions = false
@@ -12,9 +12,16 @@ function init()
     m.videoPlayer = m.imageView.FindNode("videoPlayer")
     m.imageViewer = m.imageView.FindNode("imageViewer")
 
-    m.top.appendChild(m.imageView)
+    m.loginpanel = m.top.findNode("loginPanel")
 
-    m.top.panelSet.appendChild(m.albumPanel)
+    'm.top.appendChild(m.loginpanel)
+
+    'm.top.appendChild(m.imageView)
+
+    m.top.panelSet.appendChild(m.loginpanel)
+   ' m.top.panelSet.appendChild(m.albumPanel)
+
+
     m.albumList = m.top.FindNode("AlbumListContent")
     m.listGrid = m.top.FindNode("AlbumList")
     m.albumPanel.grid = m.listGrid
@@ -25,27 +32,31 @@ function init()
 
     m.top.panelSet.observeField("focusedChild", "panelSwitch")
     
-    m.listGrid.setFocus(true)
-
     m.listGrid.observeField("itemSelected", "selectAlbum")
-    m.loadedUser = "zarrf"
-    m.overhang.title = m.loadedUser
-    AsyncLoadAlbums(m.loadedUser)
+
+    m.loginpanel.visible = true
+    m.loginpanel.setFocus(true)
 end function
 
-Function SetConfig()
+function onSelectedUser(msg as Object)
+    asyncLoadAlbums(m.top.selectedUser)
+    m.overhang.title = m.top.selectedUser
+end function
+
+function SetConfig()
     m.global.addFields({
         apiUrl: "https://api.smugmug.com",
-        apiKey: "smugmug api key"
+        apiKey: "smugmug api key",
+        apiSecret: "smugmug api secret"
     })
-end Function
+end function
 
 function panelSwitch(msg as Object) 
     'print "Panel being switched "; msg.getData().id
     
     if m.top.panelSet.isGoingBack
         'm.listGrid.setFocus(true)
-        m.overhang.title = m.loadedUser
+        m.overhang.title = m.top.selectedUser
     end if
 end function
 
@@ -68,7 +79,7 @@ Function selectAlbum(msg as object)
     end if
 end function
 
-Function AsyncLoadAlbums(SMUser as String, start = 1 as Integer) as Object
+Function asyncLoadAlbums(SMUser as String, start = 1 as Integer) as Object
     ' This is a little json based filter language for smugmug which lets us only retrieve those fields we care about 
     ' and also chain a bunch of sub requests together so we do not need so many round trips.
     requestConfigJson = FormatJson({
@@ -132,7 +143,7 @@ Function handleLoadAlbums(msg as Object)
         end for
         if json.Response.Pages.NextPage <> invalid
             newStart = json.Response.Pages.Start + json.Response.Pages.Count
-            AsyncLoadAlbums(m.loadedUser, newStart)
+            asyncLoadAlbums(m.top.selectedUser, newStart)
         end if
     end if
 end Function

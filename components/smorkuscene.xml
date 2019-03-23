@@ -1,10 +1,16 @@
 <?xml version = "1.0" encoding = "utf-8" ?>
 
-<component name = "SmorkuScene" extends = "OverhangPanelSetScene" initialFocus = "AlbumList">
+<component name = "SmorkuScene" extends = "OverhangPanelSetScene" initialFocus = "LoginPanel">
+    <interface>
+        <field id="selectedUser" type="string" onChange="onSelectedUser"/>
+    </interface>
+
     <children>
-        <Overhang id="overhang"
-            title = "monkey"
-            />
+        <!-- <Overhang id="overhang"/> -->
+        <LoginPanel
+            id = "LoginPanel"
+            isFullScreen="true"/>
+
         <GridPanel id="AlbumPanel"
             panelSize="full"
             leftOnly="true"
@@ -25,6 +31,7 @@
         </GridPanel>
     </children>
 
+    <script type="text/brightscript" uri="pkg://components/array.brs"/>
     <script type="text/brightscript" uri="pkg://components/smorkuscene.brs"/>
 
 </component>
