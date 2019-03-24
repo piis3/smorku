@@ -1,4 +1,5 @@
 function init() 
+    setConfig()
     m.arrays = ArrayUtil()
     m.math = MathUtil()
     m.baseUrl = "https://api.smugmug.com/services/oauth/1.0a/getRequestToken"
@@ -8,7 +9,27 @@ function init()
     m.top.isFullScreen = true
     m.top.focusable = true
 
-    m.visible = true
+    m.loggedIn = m.registry
+    m.registry = RegistryUtil()
+    m.authData = m.registry.readSection("auth")
+    
+    loggedIn = m.authData <> invalid and m.authData.oauthTokenSecret <> invalid
+    
+    if loggedIn
+        creds = {
+            apiKey: m.global.apiKey,
+            apiSecret: m.global.apiSecret,
+            token: m.authData.oauthToken,
+            tokenSecret: m.authData.oauthTokenSecret
+        }
+        m.signer = RequestSigner(creds)
+    else
+        setAnonymousCreds()
+    end if
+
+    m.global.addFields({creds:  m.signer.creds})
+
+    m.visible = not loggedIn
     m.loginGroup = m.top.findNode("loginGroup")
     m.loginGroup.visible = true
     
@@ -23,9 +44,45 @@ function init()
 
     m.loginButton = m.loginGroup.findNode("loginButton")
     m.loginButton.observeField("buttonSelected", "performLogin")
-    
+     
     outerGroup = m.top.findNode("outerGroup")
 
+    if loggedIn
+        requestAuthedUser("selectLoggedInUser")
+    end if
+end function
+
+function SetConfig()
+    m.global.addFields({
+        apiUrl: "https://api.smugmug.com",
+        apiKey: "smugmug api key",
+        apiSecret: "smugmug api secret",
+    })
+
+    uriFetcher = createObject("roSGNode", "UriFetcher")
+    m.global.addFields({uriFetcher: uriFetcher})
+end function
+
+function setAnonymousCreds()
+    creds = {
+        apiKey: m.global.apiKey,
+        apiSecret: m.global.apiSecret
+    }
+    m.signer = RequestSigner(creds)
+end function
+
+function selectLoggedInUser(msg as object)
+    if msg.getData().code = 401
+        ' That means our token is invalid, so we should clear it out
+        print "Got not authorized on authed user, assume our token is invalid"
+        m.visible = true
+        return invalid
+    end if
+
+    js = ParseJSON(msg.getData().content)
+    user = js.Response.User.Name
+    print "Logged in user is "; user
+    m.top.selectedUser = user
 end function
 
 function showSelectUser(msg as object)
@@ -58,6 +115,7 @@ function performLogin(msg as object)
     ctx.addFields({parameters: params, response: {}})
     ctx.observeField("response", "onTokenRequest")
     m.global.uriFetcher.request = {context: ctx}
+    
 end function
 
 ' Generates oauth query string to generate an access token request
@@ -153,7 +211,6 @@ function gotUserVerficationCode(msg as object)
     hmac = createObject("roHMAC")
     keyBytes = createObject("roByteArray")
     keyBytes.fromAsciiString(m.global.apiSecret + "&" + m.tokenRequestData.lookup("oauth_token_secret"))
-    'keyBytes.fromAsciiString(m.global.apiSecret + "&")
 
     messageBytes = createObject("roByteArray")
     messageBytes.fromAsciiString("GET&" + m.tokenUrl.escape() + "&" + paramString)
@@ -183,19 +240,68 @@ function onErrorOk(msg as object)
     if m.top.getScene().dialog <> invalid then m.top.getScene().dialog.close = true
 end function
 
+function showErrorDialog()
+    dialog = createObject("roSgNode", "Dialog")
+    dialog.title = "Login Failed"
+    dialog.message = "Login to SmugMug failed"
+    dialog.buttons = ["OK"]
+    dialog.observeField("buttonSelected", "onErrorOk")
+    m.top.getScene().dialog = dialog
+    return invalid
+end function
+
 function onAccessToken(msg as Object)
     code = msg.getData().code
     if code <> 200
-
-        dialog = createObject("roSgNode", "Dialog")
-        dialog.title = "Login Failed"
-        dialog.message = "Login to SmugMug failed"
-        dialog.buttons = ["OK"]
-        dialog.observeField("buttonSelected", "onErrorOk")
-        m.top.getScene().dialog = dialog
-        return invalid
+        showErrorDialog()
     end if
     data = msg.getData().content
+
     print "Got access token response"; msg.getData()
+
+    tokenData = {}
+    params = data.split("&")
+    for each param in params
+        parts = param.split("=")
+        tokenData.AddReplace(parts[0], parts[1])
+    end for
+
+    creds = {
+        apiKey: m.global.apiKey,
+        apiSecret: m.global.apiSecret,
+        token: tokenData.oauth_token.trim(),
+        tokenSecret: tokenData.oauth_token_secret.trim()
+    }
+    m.signer = RequestSigner(creds)
+    m.global.creds = m.signer.creds
+    requestAuthedUser("onGotAuthedUser")
 end function
 
+function requestAuthedUser(callBackName as String)
+    ' as a test, lookup the authenticated user
+    reqParams = {
+        uri: m.global.apiUrl + "/api/v2!authuser?_filter=Name",
+        accept: "application/json"
+    }
+
+    ctx = createObject("roSGNode", "Node")
+    ctx.addFields({parameters: m.signer.sign(reqParams), response: {}})
+    ctx.observeField("response", callBackName)
+    m.global.uriFetcher.request = {context: ctx}
+end function
+
+function onGotAuthedUser(msg as object)
+    if msg.getData().code = 401
+        showErrorDialog()
+    else
+        js = ParseJSON(msg.getData().content)
+        user = js.Response.User.Name
+        m.registry.writeKeys({
+            oauthToken: m.signer.creds.token,
+            oauthTokenSecret: m.signer.creds.tokenSecret,
+            user: user
+        }, "auth")
+        print "Logged in user is "; user
+        m.top.selectedUser = user
+    end if
+end function

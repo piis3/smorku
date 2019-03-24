@@ -1,5 +1,10 @@
 <?xml version = "1.0" encoding = "utf-8" ?>
 <component name="loginPanel" extends="Panel" initialFocus="loginGroup">
+    <interface>
+        <field id="signer" type="assocarray"/>
+        <field id="selectedUser" type="string"/>
+    </interface>
+
     <children>
         <Group id="outerGroup">
             <ButtonGroup id="loginGroup"
@@ -26,5 +31,7 @@
 
     <script type="text/brightscript" uri="pkg://components/array.brs"/>
     <script type="text/brightscript" uri="pkg://components/math.brs"/>
+    <script type="text/brightscript" uri="pkg://components/registry.brs"/>
+    <script type="text/brightscript" uri="pkg://components/requestsigner.brs"/>
     <script type="text/brightscript" uri="pkg://components/loginscene.brs"/>
 </component>

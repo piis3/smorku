@@ -2,7 +2,7 @@
 
 <component name = "SmorkuScene" extends = "OverhangPanelSetScene" initialFocus = "LoginPanel">
     <interface>
-        <field id="selectedUser" type="string" onChange="onSelectedUser"/>
+        <field id="selectedUser" type="string" onChange="onSelectedUser" alwaysNotify="true"/>
     </interface>
 
     <children>
@@ -32,6 +32,7 @@
     </children>
 
     <script type="text/brightscript" uri="pkg://components/array.brs"/>
+    <script type="text/brightscript" uri="pkg://components/requestsigner.brs"/>
     <script type="text/brightscript" uri="pkg://components/smorkuscene.brs"/>
 
 </component>

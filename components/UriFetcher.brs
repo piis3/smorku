@@ -1,5 +1,6 @@
 function init()
 	m.port = createObject("roMessagePort")
+
 	m.top.observeField("request", m.port)
 	m.top.functionName = "go"
 	m.top.control = "RUN"
@@ -19,7 +20,15 @@ function init()
     m.ret = true
 end function
 
+function newHttp()
+    u = createObject("roUrlTransfer")
+    u.SetCertificatesFile("common:/certs/ca-bundle.crt")
+    u.SetMessagePort(m.port)
+    return u
+end function
+
 function go() as Void
+
 	m.jobsById = {}
 	m.top.setField("urlTransferPoolField", m.urlTransferPool.count())
 	while true
@@ -70,10 +79,15 @@ function addRequest(request as Object) as Boolean
                         return false
                     else 
                         xfer.setUrl(uri)
-                        xfer.setPort(m.port)
-                        ' I know we need to set the accept header, so we'll start with that.
+                        xfer.retainBodyOnError(true)
+
+                        ' Clear out the headers, otherwise we'll just keep appending header data, and importantly, break Authorization
+                        xfer.setHeaders({})
                         if type(parameters.accept) = "roString"
                             xfer.AddHeader("Accept", parameters.accept)
+                        end if
+                        if type(parameters.authorization) = "roString"
+                            xfer.AddHeader("Authorization", parameters.authorization)
                         end if
 
                         ' should transfer more stuff from parameters to urlXfer

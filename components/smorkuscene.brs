@@ -1,7 +1,6 @@
 function init()
     m.top.setFocus(true)
     print "smorkuScene.brs INIT" 
-    SetConfig()
     m.overhang = m.top.overhang
     m.overhang.color = "0x111111ff"
     m.overhang.showClock = true
@@ -13,6 +12,7 @@ function init()
     m.imageViewer = m.imageView.FindNode("imageViewer")
 
     m.loginpanel = m.top.findNode("loginPanel")
+    m.loginpanel.observeField("selectedUser", "authSelectedUser")
 
     'm.top.appendChild(m.loginpanel)
 
@@ -26,9 +26,7 @@ function init()
     m.listGrid = m.top.FindNode("AlbumList")
     m.albumPanel.grid = m.listGrid
 
-    uriFetcher = createObject("roSGNode", "UriFetcher")
-    m.uriFetcher = uriFetcher
-    m.global.addFields({uriFetcher: uriFetcher})
+    m.uriFetcher = m.global.uriFetcher
 
     m.top.panelSet.observeField("focusedChild", "panelSwitch")
     
@@ -38,17 +36,19 @@ function init()
     m.loginpanel.setFocus(true)
 end function
 
-function onSelectedUser(msg as Object)
-    asyncLoadAlbums(m.top.selectedUser)
-    m.overhang.title = m.top.selectedUser
+function authSelectedUser(msg as object)
+    print "Auth's selected user is "; msg.getData()
+    m.top.selectedUser = msg.getData()
 end function
 
-function SetConfig()
-    m.global.addFields({
-        apiUrl: "https://api.smugmug.com",
-        apiKey: "smugmug api key",
-        apiSecret: "smugmug api secret"
-    })
+function onSelectedUser(msg as Object)
+    print "selected user... is "; m.top.selectedUser
+    m.signer = RequestSigner(m.global.creds)
+
+    asyncLoadAlbums(m.top.selectedUser)
+    m.overhang.title = m.top.selectedUser
+    m.top.panelSet.appendChild(m.albumPanel)
+    m.albumPanel.setFocus(true)
 end function
 
 function panelSwitch(msg as Object) 
@@ -108,13 +108,15 @@ Function asyncLoadAlbums(SMUser as String, start = 1 as Integer) as Object
         }
     }).escape()
 
-    reqUrl = m.global.apiUrl + "/api/v2/user/" + SMUser + "!albums?APIKey=" + m.global.apiKey + "&_config=" + requestConfigJson + "&start=" + start.toStr()
+    reqUrl = m.global.apiUrl + "/api/v2/user/" + SMUser + "!albums?_config=" + requestConfigJson + "&start=" + start.toStr()
+
     ctx = createObject("RoSGNode", "Node")
     parameters = {
         uri: reqUrl,
         accept: "application/json"
     }
-    ctx.addFields({parameters: parameters, response: {}})
+    ctx.addFields({parameters: m.signer.sign(parameters), response: {}})
+    'printCurl(ctx)
     ctx.observeField("response", "handleLoadAlbums")
     m.uriFetcher.request = {context: ctx}
 end Function
