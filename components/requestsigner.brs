@@ -22,9 +22,9 @@ function RequestSigner(myCreds as Object)
                 queryStartIdx = ctx.uri.instr("?")
                 if queryStartIdx < 0
                     ' we don't have a query string, so we can definitely just append the api key
-                    ctx.uri = ctx.uri + "?APIKey="+creds.apiKey
+                    ctx.uri = ctx.uri + "?APIKey="+m.creds.apiKey
                 else if ctx.uri.instr(queryStartIdx, "APIKey=") < 0
-                    ctx.uri = ctx.uri + "&APIKey="+creds.apiKey
+                    ctx.uri = ctx.uri + "&APIKey="+m.creds.apiKey
                 end if 
 
                 return ctx
@@ -67,7 +67,7 @@ function RequestSigner(myCreds as Object)
             messageBytes = createObject("roByteArray")
             messageBytes.fromAsciiString("GET&" + urlToSign)
 
-            print "Signing message: " + messageBytes.toAsciiString()
+            'print "Signing message: " + messageBytes.toAsciiString()
             hmac.setup("sha1", m.signingKey)
 
             signature = hmac.process(messageBytes).toBase64String()
@@ -84,7 +84,7 @@ function RequestSigner(myCreds as Object)
 
             oauthParamString = headerKvs.join(",")
             ctx["Authorization"] = "OAuth " + oauthParamString
-            print "Auth header: "; ctx["Authorization"]
+            'print "Auth header: "; ctx["Authorization"]
             return ctx
         end function
     }

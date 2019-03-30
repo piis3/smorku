@@ -20,6 +20,7 @@
         </PosterGrid>
     </children>
     
+    <script type="text/brightscript" uri="pkg://components/requestsigner.brs"/>
     <script type="text/brightscript" uri="pkg://components/albumview.brs"/>
 </component>
-         
+

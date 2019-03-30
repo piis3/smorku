@@ -6,10 +6,10 @@
     </interface>
 
     <children>
-        <!-- <Overhang id="overhang"/> -->
         <LoginPanel
-            id = "LoginPanel"
-            isFullScreen="true"/>
+            id = "LoginPanel"/>
+
+        <Overhang id="overhang"/> 
 
         <GridPanel id="AlbumPanel"
             panelSize="full"
@@ -32,6 +32,7 @@
     </children>
 
     <script type="text/brightscript" uri="pkg://components/array.brs"/>
+    <script type="text/brightscript" uri="pkg://components/registry.brs"/>
     <script type="text/brightscript" uri="pkg://components/requestsigner.brs"/>
     <script type="text/brightscript" uri="pkg://components/smorkuscene.brs"/>
 

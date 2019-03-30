@@ -5,18 +5,15 @@ function init()
     m.baseUrl = "https://api.smugmug.com/services/oauth/1.0a/getRequestToken"
     m.authUrl = "https://api.smugmug.com/services/oauth/1.0a/authorize"
     m.tokenUrl = "https://api.smugmug.com/services/oauth/1.0a/getAccessToken"
-    m.top.panelSize = "full"
-    m.top.isFullScreen = true
-    m.top.focusable = true
 
-    m.loggedIn = m.registry
     m.registry = RegistryUtil()
     m.authData = m.registry.readSection("auth")
     
     loggedIn = m.authData <> invalid and m.authData.oauthTokenSecret <> invalid
-    
+    'stop 
     if loggedIn
         creds = {
+            user: m.authData.user,
             apiKey: m.global.apiKey,
             apiSecret: m.global.apiSecret,
             token: m.authData.oauthToken,
@@ -25,28 +22,27 @@ function init()
         m.signer = RequestSigner(creds)
     else
         setAnonymousCreds()
+        m.top.loggedIn = false
     end if
 
     m.global.addFields({creds:  m.signer.creds})
 
-    m.visible = not loggedIn
+    'm.top.visible = not loggedIn
     m.loginGroup = m.top.findNode("loginGroup")
     m.loginGroup.visible = true
     
-    panelRect = m.top.boundingRect()
     m.loginGroup.translation = [
-        (1280 - panelRect.width) / 2,
-        (720 - panelRect.height) / 2
+        1280 / 2 ,
+        (720 / 2) - 115
     ]
 
+    'stop
     m.lookupButton = m.loginGroup.findNode("lookup")
     m.lookupButton.observeField("buttonSelected", "showSelectUser")
 
     m.loginButton = m.loginGroup.findNode("loginButton")
     m.loginButton.observeField("buttonSelected", "performLogin")
      
-    outerGroup = m.top.findNode("outerGroup")
-
     if loggedIn
         requestAuthedUser("selectLoggedInUser")
     end if
@@ -71,22 +67,42 @@ function setAnonymousCreds()
     m.signer = RequestSigner(creds)
 end function
 
+function showLoginScreen(msg as object)
+    if msg.getData()
+        m.top.visible = true
+        m.loginGroup.setFocus(true)
+    else
+        m.top.visible = false
+        m.loginGroup.setFocus(false)
+    end if
+end function
+
 function selectLoggedInUser(msg as object)
     if msg.getData().code = 401
         ' That means our token is invalid, so we should clear it out
+        setAnonymousCreds()
+        m.top.loggedIn = false
         print "Got not authorized on authed user, assume our token is invalid"
-        m.visible = true
+        m.top.visible = true
         return invalid
     end if
 
     js = ParseJSON(msg.getData().content)
     user = js.Response.User.Name
     print "Logged in user is "; user
+    m.top.loggedIn = true
     m.top.selectedUser = user
 end function
 
 function showSelectUser(msg as object)
-    print "select user now"
+    dialog = createObject("roSGNode", "userLookupDialog")
+    dialog.observeField("selectedUser", "selectOtherUser")
+    m.top.getScene().dialog = dialog
+end function
+
+function selectOtherUser(msg as object)
+    print "Selected other user: "; msg.getData()
+    m.top.selectedUser = msg.getData() 
 end function
 
 function showEnterPinDialog(msg as object)

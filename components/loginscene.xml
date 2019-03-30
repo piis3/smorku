@@ -1,12 +1,17 @@
 <?xml version = "1.0" encoding = "utf-8" ?>
-<component name="loginPanel" extends="Panel" initialFocus="loginGroup">
+<component name="loginPanel" extends="Group" initialFocus="loginGroup">
     <interface>
+        <field id="loggedIn" type="boolean"/>
         <field id="signer" type="assocarray"/>
-        <field id="selectedUser" type="string"/>
+        <field id="selectedUser" type="string" alwaysNotify="true"/>
+        <field id="showLogin" type="boolean" onChange="showLoginScreen" alwaysNotify="true"/>
     </interface>
 
     <children>
-        <Group id="outerGroup">
+        <Rectangle id="loginBackground"
+            color="0x000000FF"
+            width="1280"
+            height="720">
             <ButtonGroup id="loginGroup"
                 visible="true"
                 layoutDirection="vert"
@@ -25,7 +30,7 @@
                         text="View a smugmug users albums"/>
             </ButtonGroup>
              
-        </Group>
+        </Rectangle>
 
     </children>
 

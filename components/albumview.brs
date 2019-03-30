@@ -23,6 +23,7 @@ function handleEndViewing(msg as object)
 end function
 
 function loadAlbumImages(msg as object) 
+    m.signer = RequestSigner(m.global.creds)
     actualLoadAlbumImages()
 end function
 
@@ -53,13 +54,13 @@ function actualLoadAlbumImages(start = 1 as Integer)
         }
     }).escape()
 
-    reqUrl = m.global.apiUrl + m.top.albumUri + "!images?APIKey=" + m.global.apiKey + "&_config=" + requestConfigJson + "&start=" + start.toStr()
+    reqUrl = m.global.apiUrl + m.top.albumUri + "!images?_config=" + requestConfigJson + "&start=" + start.toStr()
     ctx = createObject("RoSGNode", "Node")
     parameters = {
         uri: reqUrl,
         accept: "application/json"
     }
-    ctx.addFields({parameters: parameters, response: {}})
+    ctx.addFields({parameters: m.signer.sign(parameters), response: {}})
     ctx.observeField("response", "handleImages")
     m.uriFetcher.request = {context: ctx}
 end function
@@ -98,41 +99,6 @@ function handleImages(msg as object)
         end if
     end if
     m.imageGrid.setFocus(true)
-end function
-
-function loadAlbumImageThumbnail(sizesUri as String, i as object)
-    reqUrl = m.global.apiUrl + sizesUri + "?APIKey=" + m.global.apiKey
-    ctx = createObject("RoSGNode", "Node")
-    parameters = {
-        uri: reqUrl,
-        accept: "application/json"
-    }
-    ctx.addFields({parameters: parameters, contentNode: i, response: {}})
-    ctx.observeField("response", "handleAlbumImageThumbnail")
-    m.uriFetcher.request = {context: ctx}
-end function
-
-function handleAlbumImageThumbnail(msg as object)
-    print "Entered handleAlbumImageThumbnail"
-    mt = type(msg)
-    if mt = "roSGNodeEvent"
-        ctx = msg.getRoSGNode()
-        response = msg.getData()
-        json = ParseJSON(response.content)
-        node = ctx.contentNode
-        node.fhdgridposterurl = json.Response.ImageSizes.MediumImageUrl
-        if json.Response.ImageSizes.lookup("4KImageUrl") <> invalid
-            node.addFields({image4kUrl: json.Response.ImageSizes.lookup("4KImageUrl")})
-        else
-            node.addFields({image4kUrl: json.Response.ImageSizes.LargestImageUrl})
-        end if
-
-        if json.Response.ImageSizes.lookup("X3LargeImageUrl") <> invalid
-            node.addFields({image2kUrl: json.Response.ImageSizes.lookup("X3LargeImageUrl")})
-        else
-            node.addFields({image2kUrl: json.Response.ImageSizes.LargestImageUrl})
-        end if
-    end if
 end function
 
 function handleViewImage(msg as object)

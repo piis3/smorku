@@ -18,7 +18,7 @@ function onImageLoaded(msg as object)
     if msg.getNode() <> m.cachingPoster.id
         if msg.getData() = "ready" 
             switchViewers()
-        else if msg.getData() = "loading" 
+        else if msg.getData() = "loading" and msg.getNode() = m.switchImageViewer.id
             m.loadingPoster.visible = true
         end if
     end if
@@ -46,19 +46,19 @@ function displayContent(item as object)
 
     item = m.top.contentList.getChild(idx)
     if item = invalid
-        print "Invalid index "; idx
+        ' print "Invalid index "; idx
         close()
     else 
         ' The alternate viewer might already have the image we want, in which case we just swap them
         if m.switchImageViewer.uri = item.image2kUrl
-            print "Alternate poster already has url"
+            ' print "Alternate poster already has url"
             switchViewers()
         else if m.cachingPoster.uri = item.image2kUrl
-            print "Swapping in cached poster for image"
+            ' print "Swapping in cached poster for image"
             tmp = m.cachingPoster
             m.cachingPoster = m.switchImageViewer
             m.switchImageViewer = tmp
-            if m.cachingPoster.loadStatus <> "ready"
+            if m.switchImageViewer.loadStatus <> "ready"
                 m.loadingPoster.visible = true
             else 
                 switchViewers()
@@ -83,7 +83,7 @@ function onKeyEvent(key as String, press as boolean) as boolean
     end if
 
     if m.imageViewer.visible = true
-        print "key press! "; key 
+        ' print "key press! "; key 
         if key = "back" 
             close()
             m.top.setFocus(false)

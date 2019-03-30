@@ -1,11 +1,13 @@
 function init()
     m.top.setFocus(true)
     print "smorkuScene.brs INIT" 
-    m.overhang = m.top.overhang
+
+    m.overhang = m.top.findNode("overhang")
     m.overhang.color = "0x111111ff"
     m.overhang.showClock = true
-    m.overhang.showOptions = false
+    m.overhang.showOptions = true
     m.overhang.logoUri = "pkg:/images/panel-logo.png"
+
     m.albumPanel = m.top.FindNode("AlbumPanel")
     m.imageView = createObject("roSGNode", "ImageView")
     m.videoPlayer = m.imageView.FindNode("videoPlayer")
@@ -14,13 +16,10 @@ function init()
     m.loginpanel = m.top.findNode("loginPanel")
     m.loginpanel.observeField("selectedUser", "authSelectedUser")
 
-    'm.top.appendChild(m.loginpanel)
-
-    'm.top.appendChild(m.imageView)
+    m.top.appendChild(m.imageView)
 
     m.top.panelSet.appendChild(m.loginpanel)
-   ' m.top.panelSet.appendChild(m.albumPanel)
-
+    m.top.panelSet.appendChild(m.albumPanel)
 
     m.albumList = m.top.FindNode("AlbumListContent")
     m.listGrid = m.top.FindNode("AlbumList")
@@ -32,11 +31,61 @@ function init()
     
     m.listGrid.observeField("itemSelected", "selectAlbum")
 
-    m.loginpanel.visible = true
-    m.loginpanel.setFocus(true)
+    if not m.loginPanel.loggedIn
+        m.loginpanel.visible = true
+        m.loginpanel.setFocus(true)
+    end if
+end function
+
+function onKeyEvent(key as String, press as boolean) as boolean
+    if not press
+        return false
+    end if
+
+    if key = "options"
+        showOptionsDialog()
+        return true
+    end if
+
+    return false
+end function
+
+function showOptionsDialog()
+    dialog = createObject("roSGNode", "optionsDialog")
+    dialog.observeField("logout", "handleLogout")
+    dialog.observeField("login", "handleLogin")
+    dialog.observeField("showOtherUser", "handleShowOtherUser")
+    dialog.observeField("showMyUser", "handleShowMyUser")
+    m.top.getScene().dialog = dialog
+end function
+
+function handleLogin(msg as object)
+    m.loginPanel.showLogin = true
+end function
+
+function handleLogout(msg as object)
+    m.global.creds = {
+        apiKey: m.global.apiKey,
+        apiSecret: m.global.apiSecret
+    }
+    registry = RegistryUtil()
+    registry.deleteSection("auth")
+    m.loginpanel.showLogin  = true
+end function
+
+function handleShowMyUser(msg as object)
+    m.top.selectedUser = m.global.creds.user
+end function
+
+function handleShowOtherUser(msg as object)
+    dialog = createObject("roSGNode", "userLookupDialog")
+    dialog.observeField("selectedUser", "authSelectedUser")
+    m.top.getScene().dialog = dialog
 end function
 
 function authSelectedUser(msg as object)
+    m.albumPanel.leftOnly = true
+    m.loginpanel.showLogin = false
     print "Auth's selected user is "; msg.getData()
     m.top.selectedUser = msg.getData()
 end function
@@ -45,10 +94,17 @@ function onSelectedUser(msg as Object)
     print "selected user... is "; m.top.selectedUser
     m.signer = RequestSigner(m.global.creds)
 
-    asyncLoadAlbums(m.top.selectedUser)
     m.overhang.title = m.top.selectedUser
-    m.top.panelSet.appendChild(m.albumPanel)
     m.albumPanel.setFocus(true)
+    
+    ' create and/or replace the grid's contents
+    m.listGrid.numRows = 1
+    m.albumList.removeChildrenIndex(m.albumList.getChildCount(), 0)
+    print "Before load child count is "; m.albumList.getChildCount()
+    m.listGrid.jumpToItem = -1
+    
+    asyncLoadAlbums(m.top.selectedUser)
+
 end function
 
 function panelSwitch(msg as Object) 
@@ -116,7 +172,6 @@ Function asyncLoadAlbums(SMUser as String, start = 1 as Integer) as Object
         accept: "application/json"
     }
     ctx.addFields({parameters: m.signer.sign(parameters), response: {}})
-    'printCurl(ctx)
     ctx.observeField("response", "handleLoadAlbums")
     m.uriFetcher.request = {context: ctx}
 end Function
@@ -124,17 +179,15 @@ end Function
 Function handleLoadAlbums(msg as Object)
     print "Entered handleLoadAlbums"
     mt = type(msg)
-    listGrid = m.listGrid
-    listContent = m.albumList
     if mt="roSGNodeEvent"
         ctx = msg.getRoSGNode()
         response = msg.getData()
         json = ParseJSON(response.content)
         albums = parseLoadAlbums(json)
-        loadedImagesCount = albums.Count() + listContent.getChildCount()
-        listGrid.numRows = (loadedImagesCount / listGrid.numColumns) + 1
+        loadedImagesCount = albums.Count() + m.albumList.getChildCount()
+        m.listGrid.numRows = (loadedImagesCount / m.listGrid.numColumns) + 1
         for each album in albums
-            a = listContent.createChild("ContentNode")
+            a = m.albumList.createChild("ContentNode")
             a.shortdescriptionline1 = album.name
             a.addFields({
                 albumUri: album.albumUri, 
@@ -147,6 +200,7 @@ Function handleLoadAlbums(msg as Object)
             newStart = json.Response.Pages.Start + json.Response.Pages.Count
             asyncLoadAlbums(m.top.selectedUser, newStart)
         end if
+        print "Child count is "; m.albumList.getChildCount()
     end if
 end Function
 

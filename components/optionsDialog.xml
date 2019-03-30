@@ -1,0 +1,49 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+
+<component name="optionsDialog" extends="Dialog">
+
+    <interface>
+        <field id="logout" type="boolean"/>
+        <field id="login" type="boolean"/>
+        <field id="showOtherUser" type="boolean"/>
+        <field id="showMyUser" type="boolean"/>
+    </interface>
+
+    <children>
+    </children>
+    <script type="text/brightscript">
+    <![CDATA[
+        sub init()
+            print "OptionsDialog init"
+            m.top.title = "Options"
+            signedIn = m.global.creds <> invalid and m.global.creds.tokenSecret <> invalid
+            m.shownButtons = ["View a user"+chr(39)+"s albums"]
+            if signedIn 
+                m.shownButtons.push("View my albums")
+                m.shownButtons.push("Logout")
+            else
+                m.shownButtons.push("Login")
+            end if
+            m.shownButtons.push("Cancel")
+
+            m.top.buttons = m.shownButtons
+            m.top.observeField("buttonSelected", "onButton")
+        end sub
+
+        function onButton(msg as object)
+            buttonIdx = msg.getData()
+            buttonName = m.shownButtons[buttonIdx]
+            if buttonName = "Logout"
+                m.top.logout = true
+            else if buttonName = "Login"
+                m.top.login = true
+            else if buttonName = "View a user"+chr(39)+"s albums"
+                m.top.showOtherUser = true
+            else if buttonName = "View my albums"
+                m.top.showMyUser = true
+            end if
+            m.top.close = true
+        end function
+    ]]>
+    </script>
+</component>

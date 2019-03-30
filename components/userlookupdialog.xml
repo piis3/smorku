@@ -1,0 +1,58 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+
+<component name="userLookupDialog" extends="KeyboardDialog">
+
+    <interface>
+        <field id="selectedUser" type="string"/>
+    </interface>
+
+    <children>
+    </children>
+
+    <script type="text/brightscript" uri="pkg://components/requestsigner.brs"/>
+    <script type="text/brightscript">
+    <![CDATA[
+        sub init()
+            m.top.title = "Find User"
+            m.baseDescription = "Enter the username of a SmugMug user to view"
+            m.top.message = m.baseDescription
+
+            m.top.buttons = ["OK", "Cancel"]
+            m.top.observeField("buttonSelected", "onButton")
+
+            m.uriFetcher = m.global.uriFetcher
+            
+        end sub
+
+        function onUserDetails(msg as object)
+            ' luckily we can just use the http status code
+            if msg.getData().code = 404
+                m.top.graphicUri = invalid
+                m.top.message = "Unable to find user " + m.top.text + chr(10) + m.baseDescription
+            else
+                m.top.selectedUser = m.top.text.trim()
+                m.top.close = true
+            end if
+        end function
+
+        function onButton(msg as object)
+            if msg.getData() = 0
+                'lookup the user
+                m.top.graphicUri = "pkg:/images/spinner-icon.png"
+                signer = RequestSigner(m.global.creds)
+                reqParams = {
+                    uri: m.global.apiUrl + "/api/v2/user/" + m.top.text.trim().escape() + "?_filter=Name",
+                    accept: "application/json"
+                }
+
+                ctx = createObject("roSGNode", "Node")
+                ctx.addFields({parameters: reqParams, response: {}})
+                ctx.observeField("response", "onUserDetails")
+                m.uriFetcher.request = {context: ctx}
+            else
+                m.top.close = true
+            end if 
+        end function
+    ]]>
+    </script>
+</component>

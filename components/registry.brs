@@ -60,7 +60,9 @@ function RegistryUtil() as Object
         '@param section Registry section name
         deleteSection: function(section = "default" as String) as Boolean
             reg = createObject("roRegistry")
-            return reg.delete(section)
+            res = reg.delete(section)
+            reg.flush()
+            return res
         end function
 
         '** Deletes all sections from the registry
