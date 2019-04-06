@@ -29,7 +29,7 @@ end function
 
 function actualLoadAlbumImages(start = 1 as Integer) 
     requestConfigJson = FormatJson({
-        filter: ["Uri", "Caption", "FileName"],
+        filter: ["Uri", "Caption", "FileName", "IsVideo"],
         filteruri: ["ImageSizes"],
         expand: {
             "ImageSizes": {
@@ -140,6 +140,5 @@ function videoState(msg as object)
     if m.top.videoPlayer.state = "error"
         print m.top.videoPlayer.completedStreamInfo
         print m.top.videoPlayer.errorMsg; " code "; m.top.videoPlayer.errorCode; " "; m.top.videoPlayer.errorStr
-        stop
     end if
 end function

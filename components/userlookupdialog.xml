@@ -28,7 +28,7 @@
             ' luckily we can just use the http status code
             if msg.getData().code = 404
                 m.top.graphicUri = invalid
-                m.top.message = "Unable to find user " + m.top.text + chr(10) + m.baseDescription
+                m.top.message = "Unable to find user " + m.top.text 
             else
                 m.top.selectedUser = m.top.text.trim()
                 m.top.close = true
@@ -38,7 +38,7 @@
         function onButton(msg as object)
             if msg.getData() = 0
                 'lookup the user
-                m.top.graphicUri = "pkg:/images/spinner-icon.png"
+                m.top.message = "Loading..."
                 signer = RequestSigner(m.global.creds)
                 reqParams = {
                     uri: m.global.apiUrl + "/api/v2/user/" + m.top.text.trim().escape() + "?_filter=Name",

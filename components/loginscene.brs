@@ -10,7 +10,7 @@ function init()
     m.authData = m.registry.readSection("auth")
     
     loggedIn = m.authData <> invalid and m.authData.oauthTokenSecret <> invalid
-    'stop 
+
     if loggedIn
         creds = {
             user: m.authData.user,
@@ -27,7 +27,7 @@ function init()
 
     m.global.addFields({creds:  m.signer.creds})
 
-    'm.top.visible = not loggedIn
+    m.top.visible = not loggedIn
     m.loginGroup = m.top.findNode("loginGroup")
     m.loginGroup.visible = true
     
@@ -36,7 +36,6 @@ function init()
         (720 / 2) - 115
     ]
 
-    'stop
     m.lookupButton = m.loginGroup.findNode("lookup")
     m.lookupButton.observeField("buttonSelected", "showSelectUser")
 
@@ -45,15 +44,19 @@ function init()
      
     if loggedIn
         requestAuthedUser("selectLoggedInUser")
+    else 
     end if
 end function
 
 function SetConfig()
+    apikeys = ParseJSON(ReadAsciiFile("pkg:/json/apikeys.json")) 
     m.global.addFields({
         apiUrl: "https://api.smugmug.com",
-        apiKey: "smugmug api key",
-        apiSecret: "smugmug api secret",
+        apiKey: apikeys.apiKey, 
+        apiSecret: apikeys.apiSecret,
+        
     })
+
 
     uriFetcher = createObject("roSGNode", "UriFetcher")
     m.global.addFields({uriFetcher: uriFetcher})
@@ -71,6 +74,7 @@ function showLoginScreen(msg as object)
     if msg.getData()
         m.top.visible = true
         m.loginGroup.setFocus(true)
+        m.loginGroup.focusButton = 0
     else
         m.top.visible = false
         m.loginGroup.setFocus(false)
@@ -97,11 +101,17 @@ end function
 function showSelectUser(msg as object)
     dialog = createObject("roSGNode", "userLookupDialog")
     dialog.observeField("selectedUser", "selectOtherUser")
+    previousUser = m.registry.read("otherUser", "auth") 
+    if previousUser <> invalid
+        dialog.text = previousUser
+        dialog.keyboard.textEditBox.cursorPosition = previousUser.len() 
+    end if
     m.top.getScene().dialog = dialog
 end function
 
 function selectOtherUser(msg as object)
     print "Selected other user: "; msg.getData()
+    m.registry.write("otherUser", msg.getData(), "auth")
     m.top.selectedUser = msg.getData() 
 end function
 
@@ -294,7 +304,7 @@ function onAccessToken(msg as Object)
 end function
 
 function requestAuthedUser(callBackName as String)
-    ' as a test, lookup the authenticated user
+    ' check if the auth token we have is valid, lookup the authenticated user
     reqParams = {
         uri: m.global.apiUrl + "/api/v2!authuser?_filter=Name",
         accept: "application/json"

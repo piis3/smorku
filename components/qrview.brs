@@ -121,7 +121,6 @@ function findBestFit(startVersion = 1)
 
     if foundSize < 0
         print "Unable to fit data in a QR code version"
-        stop
     end if
     ' If the mode sizes for the found version aren't the same as we used in our estimation, then we may need a different version
     if modeSize <> modeSizesForVersion(foundSize)
@@ -167,7 +166,7 @@ function modeSizesForVersion(version as Integer)
         else if m.mode = m.constants.MODE_BYTES
             return 8
         else
-            stop
+            print "Mode size not found for version"
         end if
     else if version < 27
         if m.mode = m.constants.MODE_ALPHANUM
@@ -380,7 +379,7 @@ function calculateData()
     
     if bitIndex > bitLimit
         print "Code length overflow data size "; bitIndex; " larger than bit limit "; bitLimit
-        stop
+        return invalid
     end if
     
     for i = 0 to m.math.min(bitLimit - bitIndex, 4) - 1
@@ -504,7 +503,6 @@ function drawData(data as object, maskPattern as integer)
         if myCol <= 6
             myCol -= 1
         end if
-        'if col = 60 then stop
 
         colRange = [myCol, myCol-1]
 
