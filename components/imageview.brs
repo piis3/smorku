@@ -144,7 +144,7 @@ function onKeyEvent(key as String, press as boolean) as boolean
             ' already incremented, now cache one more up
             cacheIndex(m.top.contentIndex + 1)
             return true
-        else if key = "OK"
+        else if key = "OK" or key = "play"
             playVideo()
             return true
         end if
