@@ -30,7 +30,7 @@ end function
 function actualLoadAlbumImages(start = 1 as Integer) 
     requestConfigJson = FormatJson({
         filter: ["Uri", "Caption", "FileName", "IsVideo"],
-        filteruri: ["ImageSizes"],
+        filteruri: ["ImageSizes", "LargestVideo"],
         expand: {
             "ImageSizes": {
                 filter: [], 
@@ -50,6 +50,10 @@ function actualLoadAlbumImages(start = 1 as Integer)
                         filter: ["Url", "RequestedHeight", "RequestedWidth"]
                     }
                 }
+            },
+            "LargestVideo": {
+                filter: ["Url"]
+                filteruri: []
             }
         }
     }).escape()
@@ -80,7 +84,13 @@ function handleImages(msg as object)
             if len(image.Caption) > 0
                 i.shortdescriptionline1 = image.Caption
             end if
-            i.addFields({imageUri: i.Uri})
+
+            if image.Uris.LargestVideo <> invalid
+                videoRef = json.Expansions.lookup(image.Uris.LargestVideo.Uri)
+                i.addFields({videoUrl: videoRef.LargestVideo.Url})
+            end if
+
+            i.addFields({imageUri: image.Uri, IsVideo: image.IsVideo})
             sizesRef = json.Expansions.lookup(image.Uris.ImageSizes.Uri)
             customSizesRef = json.Expansions.lookup(sizesRef.ImageSizes.Uris.ImageSizeCustom.Uri)
             for each imageSize in customSizesRef.ImageSizeCustom
@@ -98,47 +108,14 @@ function handleImages(msg as object)
             actualLoadAlbumImages(newStart)
         end if
     end if
-    m.imageGrid.setFocus(true)
 end function
 
 function handleViewImage(msg as object)
     'selected = m.imageGrid.content.getChild(m.imageGrid.itemSelected)
     m.top.imageView.contentList = m.imageGrid.content
     m.top.imageView.contentIndex = m.imageGrid.itemSelected
+    m.top.imageView.setFocus(true)
     print "Set content index to "; m.top.imageView.contentIndex
 
 end function
 
-' Leaving this here temporarily for when we deal with video again
-function handleVideo(msg as object)
-    selected = m.imageGrid.content.getChild(m.imageGrid.itemSelected)
-    'm.imageView = createObject("RoSGNode", "ImageView")
-    'm.top.nextPanel = m.imageView
-    content = createObject("roSGNode", "ContentNode")
-    http = createObject("roHttpAgent")
-    m.top.videoPlayer.setHttpAgent(http)
-    content.setFields({
-        url: "http://192.168.7.241:8080/3R8A1320-4k.mkv",
-        'url: selected.image4kUrl,
-        title: "monkey",
-        'description: "monkeys",
-        'hdposterurl: "http://s2.content.video.llnw.net/lovs/images-prod/59021fabe3b645968e382ac726cd6c7b/media/f8de8daf2ba34aeb90edc55b2d380c3f/ZLh.540x304.jpeg",
-        'streamFormat: "mkv",
-    })
-    'm.top.videoPlayer = m.top.findNode("videoPlayer")
-    m.top.videoPlayer.content = content
-    m.top.videoPlayer.visible = true
-    m.top.videoPlayer.setFocus(true)
-    m.top.videoPlayer.observeField("state", "videoState")
-    m.top.videoPlayer.control = "play"
-    'm.imageView.setFocus(true)
-    print "monkey"
-end function
-
-function videoState(msg as object)
-    print "state: "; m.top.videoPlayer.state
-    if m.top.videoPlayer.state = "error"
-        print m.top.videoPlayer.completedStreamInfo
-        print m.top.videoPlayer.errorMsg; " code "; m.top.videoPlayer.errorCode; " "; m.top.videoPlayer.errorStr
-    end if
-end function

@@ -33,12 +33,22 @@
             visible="false"
             loadDisplayMode="scaleToFit"
             id="cachingPoster"/>
+        <Poster
+            width="175"
+            height="175"
+            visible="false"
+            loadDisplayMode="noScale"
+            uri="pkg:/images/play-overlay.png"
+            translation="[552.5, 272.5]"
+            opacity="0.7"
+            focusable="false"
+            id="videoIndicator"/>
         <Video
             width="1280.0"
             height="720.0"
             visible="false"
-            enableTrickPlay="false"
 
+            enableUi="true"
             id="videoPlayer"
             />
     </children>
