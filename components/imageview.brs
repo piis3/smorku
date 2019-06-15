@@ -29,26 +29,30 @@ function onImageLoaded(msg as object)
 end function
 
 function switchViewers()
-        current = m.imageViewer
-        m.loadingPoster.visible = false   
-        current.visible = false
-        m.switchImageViewer.visible = true
-        m.imageViewer = m.switchImageViewer
-        m.switchImageViewer = current
+    current = m.imageViewer
+    m.loadingPoster.visible = false   
+    current.visible = false
+    m.switchImageViewer.visible = true
+    m.imageViewer = m.switchImageViewer
+    m.switchImageViewer = current
 
-        item = m.top.contentList.getChild(m.top.contentIndex)
-        if item <> invalid and item.IsVideo
-            m.videoIndicator.visible = true
-        end if
+    item = m.top.contentList.getChild(m.top.contentIndex)
+    if item <> invalid and item.IsVideo
+        m.videoIndicator.visible = true
+    end if
 end function
 
 function videoState(msg as object)
     state = msg.getData()
-    if state = "finished" or state = "stopped"
+    if state = "finished"
+        print "Video finished or stopped, so hiding "; state
         m.videoPlayer.visible = false
+        m.videoPlayer.setFocus(false)
+        m.videoPlayer.control = "stop"
         m.top.setFocus(true)
     else if state = "error"
         print "Got video error"
+        m.videoPlayer.control = "stop"
         m.top.setFocus(true)
         m.videoPlayer.visible = false
     end if
@@ -59,26 +63,29 @@ function close()
     m.imageViewer.visible = false
     m.switchImageViewer.visible = false
     m.loadingPoster.visible = false
-    m.top.setFocus(false)
+    m.cachingPoster.visible = false
+    m.videoPlayer.visible = false
+
     m.videoIndicator.visible = false
+    m.top.setFocus(false)
 end function
 
 function playVideo()
-        item = m.top.contentList.getChild(m.top.contentIndex)
-        if item <> invalid and item.IsVideo
-            print "Ok we can play video at "; item.videoUrl
-            content = createObject("roSGNode", "ContentNode")
-            content.setFields({
-                url: item.videoUrl,
-                hdposterurl: item.image2kurl,
-                title: item.shortdescriptionline1
-            })
-            m.videoPlayer.content = content
-            m.videoPlayer.visible = true
-            m.videoPlayer.control = "play"
-        else 
-            print "Nope, can't play this"
-        end if
+    item = m.top.contentList.getChild(m.top.contentIndex)
+    if item <> invalid and item.IsVideo
+        print "Ok we can play video at "; item.videoUrl
+        content = createObject("roSGNode", "ContentNode")
+        content.setFields({
+            url: item.videoUrl,
+            hdposterurl: item.image2kurl,
+            title: item.shortdescriptionline1
+        })
+        m.videoPlayer.content = content
+        m.videoPlayer.visible = true
+        m.videoPlayer.control = "play"
+    else 
+        print "Nope, can't play this"
+    end if
 end function    
 
 function displayContent(item as object)
@@ -128,6 +135,8 @@ function onKeyEvent(key as String, press as boolean) as boolean
         if key = "back" 
             if m.videoPlayer.visible = true
                 m.videoPlayer.control = "stop"
+                m.videoPlayer.visible = false
+                print "Video player visible = "; m.videoPlayer.visible
                 return true
             else 
                 close()
