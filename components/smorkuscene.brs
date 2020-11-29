@@ -111,7 +111,6 @@ function panelSwitch(msg as Object)
     'print "Panel being switched "; msg.getData().id
     
     if m.top.panelSet.isGoingBack
-        'm.listGrid.setFocus(true)
         m.overhang.title = m.top.selectedUser
     end if
 end function

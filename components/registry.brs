@@ -1,7 +1,6 @@
-'********************************************************************
-'**  RegistryService
-'********************************************************************
-
+'
+' From https://github.com/juliomalves/roku-libs
+'
 function RegistryUtil() as Object
     registry = {
 

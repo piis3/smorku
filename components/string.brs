@@ -1,6 +1,5 @@
 '
-'   string.brs
-'
+' From https://github.com/juliomalves/roku-libs
 '
 function StringUtil() as Object
 

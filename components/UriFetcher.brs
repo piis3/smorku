@@ -125,12 +125,6 @@ function processResponse(msg as Object)
         parameters = context.parameters
         uri = parameters.uri
 		'print "UriFetcher: response for transfer "; idkey; " status:"; msg.getResponseCode(); " for URI "; uri
-        'if msg.getResponseCode() > 399
-        '    print "error message "; msg.getString()
-        'end if
-'        if instr(1, uri, "!images")
-'            stop
-'        end if
 		result = {code: msg.getResponseCode(), content: msg.getString()}
 
 		' could handle various error codes, retry, etc.

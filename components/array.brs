@@ -1,6 +1,5 @@
 '
-'   array.brs
-'
+' From https://github.com/juliomalves/roku-libs
 '
 function ArrayUtil() as Object
 

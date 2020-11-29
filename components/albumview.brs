@@ -111,7 +111,6 @@ function handleImages(msg as object)
 end function
 
 function handleViewImage(msg as object)
-    'selected = m.imageGrid.content.getChild(m.imageGrid.itemSelected)
     m.top.imageView.contentList = m.imageGrid.content
     m.top.imageView.contentIndex = m.imageGrid.itemSelected
     m.top.imageView.setFocus(true)

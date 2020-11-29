@@ -27,9 +27,6 @@ function renderQR(text as String)
 
     m.baseOffset = [m.outlineOffset[0] + m.mSize * 2, m.outlineOffset[1] + m.mSize * 2]
 
-    
-    ' There are four levels of error correction possible
-
     ' We should actually check a series of 8 mask values to see which produces the "best" code
     ' for now, let's just start with one
     m.maskPattern = 7
@@ -407,8 +404,6 @@ end function
 function generatePoly(ecCount as Integer)
     num = [1]
     shift = 0
-    'for i = 0 to ecCount - 1
-        
 end function
 
 function createBytes(buffer as object, blocks as object)

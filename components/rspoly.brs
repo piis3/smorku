@@ -34,12 +34,8 @@ function rsPoly()
             shifted = m.arrays.fill(createObject("roArray", shift, true), 0, shift)
 
             n = invalid
-            'if idx = num.count() - 1
-            '    n = shifted
-            'else
-                n = m.arrays.slice(num, idx, num.count() - 1)
-                n.append(shifted)
-            'end if
+            n = m.arrays.slice(num, idx, num.count() - 1)
+            n.append(shifted)
 
             inst = {
                 top: m,

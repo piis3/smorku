@@ -1,6 +1,5 @@
 '
-'   math.brs
-'
+' From https://github.com/juliomalves/roku-libs
 '
 function MathUtil() as Object
     math = {
