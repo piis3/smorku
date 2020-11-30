@@ -8,7 +8,7 @@ It requires a Roku device with [development mode](https://developer.roku.com/doc
 * Upload the zip file to your roku device using the developer web interface running on the roku device.
 
 ## Usage
-If you have a SmugMug account, you can sign into it with Smorku using their OAuth process. When you start the login, you'll get a QR code with a link to SmugMug's 
+If you have a SmugMug account, you can sign into it with Smorku using their OAuth process. If not, then you can just browse other users' albums using their smugmug username. When you start the login, you'll get a QR code with a link to SmugMug's 
 OAUTH page. Scan the QR Code on your phone and login to smugmug where you'll get a 6 digit numeric code to enter into the Smorku app. Once that's done, 
 the app is authorized to view your albums. 
 You're then taken to a gallery screen with all of your albums. Selecting an album naturally takes you to the photos and videos in that album which you can scroll through and select to view full screen. In full screen mode you can use the left and right buttons on the remote to navigate around your photos. This is great for 
