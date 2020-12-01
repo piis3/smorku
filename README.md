@@ -36,8 +36,8 @@ The remaining area is filled with the data and Reed Solomon error correction blo
 On the roku, this is rendered as an array of rectangle objects drawn on the screen on top of an outer rectangle. 
 
 ### Login 
-SmugMug uses OAuth 1.0a for authorizing API clients to an account. OAuth 1.0 uses an API key and secret provided by SmugMug to the application author, which are not included here of course, in order to identify the clients. Since OAuth 1.0 doesn't require requests to happen over HTTPS, the secret is used to sign request data to prove that the request came from a client. OAuth 2.0 on the other hand, requires HTTPS and controversially just puts the secret in the query parameters, but that's another story. 
-First we get request a token from SmugMug after telling it what type of access we're requesting, in this case Full access to the account data, but read only. 
+SmugMug uses OAuth 1.0a for authorizing API clients to an account. OAuth 1.0 uses an API key and secret provided by SmugMug to the application author, which are not included here of course, in order to identify the clients. Since OAuth 1.0 doesn't require requests to happen over HTTPS, the secret is used to sign request data to prove that the request came from a client, though we do use HTTPS as well in this case. OAuth 2.0 on the other hand, requires HTTPS and controversially just puts the secret in the query parameters, but that's another story. 
+First we get a request token from SmugMug after telling it what type of access we're requesting, in this case Full access to the account data, but read only. 
 The token response lets us build the authorization URL that we're going to put into a QR code to send the user to. Once the user completes the authorization on their phone, they get a six digit code to enter into the Smorku app. Once we have that code, we call smugmug again with that in order to get an access token that store in the roku app preferences which we'll use for all subsequent requests.
 
 ### API Usage
